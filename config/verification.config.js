@@ -4,12 +4,16 @@ const config = {
     amount: true,
     status: true,
     recipientName: true,
-    payerName: true,
+    date: false, //to checks weather the payment happend in the current month and year important to prevent fraud
+    accountNumber: true
   },
 
   // expected data
-  defaults: {
+  expectedData: {
+    expectedAmount: process.env.EXPECTED_AMOUNT || null,
     expectedStatus: "Completed",
+    expectedRecipientName: process.env.EXPECTED_RECIPIENT_NAME || null,
+    expectedRecipientAccount: process.env.EXPECTED_RECIPIENT_ACCOUNT || null,
     minAmount: null,
   },
 
