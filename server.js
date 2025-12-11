@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
-import verifyController from "./controllers/verifyController.js";
-
+import verifyRoute from "./routes/verify.routes.js";
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-app.post("/api/verify", verifyController);
+app.use("/api/verify", verifyRoute);
 
 const PORT = 5000;
 

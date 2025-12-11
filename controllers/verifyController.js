@@ -5,8 +5,7 @@ import validationService from "../services/validationService.js";
 
 const getTellebirrReceipt = async (req, res) => {
   try {
-    const { receipt } = req.body;
-    const { defaultVerification } = req.body; // boolean 
+    const { receipt, defaultVerification } = req.body;
     const { verify } = req.body;
 
     const ID = receiptParser(receipt);
@@ -23,6 +22,11 @@ const getTellebirrReceipt = async (req, res) => {
       verify
     );
 
+    if (validationResult) {
+      return res.json({ message: `The receipt ${ID} is valid.` });
+    } else {
+      return res.json({ message: `The receipt ${ID} is not valid.`});
+    }
   } catch (error) {
     console.error("Error: ", error);
     return res.status(400).json({ message: "Error: error validating receipt" });
