@@ -6,7 +6,6 @@ import validationService from "../services/validationService.js";
 const getTellebirrReceipt = async (req, res) => {
   try {
     const { receipt, defaultVerification } = req.body;
-    const { verify } = req.body;
 
     const ID = receiptParser(receipt);
 
@@ -19,7 +18,6 @@ const getTellebirrReceipt = async (req, res) => {
     const validationResult = validationService(
       getRawReceiptData,
       defaultVerification,
-      verify
     );
 
     if (validationResult) {

@@ -84,7 +84,18 @@ const validatVerification = (rawHTML, defaultVerification, verify) => {
 
   console.log(parsedData);
 
-  const verificationFlags = config.defaultVerificationFields;
+  let verificationFlags;
+
+  if (defaultVerification === true) {
+    verificationFlags = config.defaultVerificationFields;
+  } else if (
+    typeof defaultVerification === "object" &&
+    defaultVerification !== null
+  ) {
+    verificationFlags = defaultVerification;
+  } else {
+    verificationFlags = config.defaultVerificationFields;
+  }
 
   const expectedData = config.expectedData;
 
