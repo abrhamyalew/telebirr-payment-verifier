@@ -24,13 +24,10 @@ const getTellebirrReceipt = async (req, res) => {
       return res
         .status(200)
         .json({ message: `The receipt '${ID}' is a valid receipt.` });
-    } else {
-      return res.status(200).json({
-        message: `The receipt '${ID}' is not a valid receipt.`,
-      });
     }
+    
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(error.status || 500).json({ error: error.message });
   }
 };
 

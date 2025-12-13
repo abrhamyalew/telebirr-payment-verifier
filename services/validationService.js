@@ -1,5 +1,5 @@
 import config from "../config/verification.config.js";
-import { ValidationError } from "../utils/errorHandler.js";
+import { ValidationError, NotFoundError } from "../utils/errorHandler.js";
 import * as cheerio from "cheerio";
 
 const validatVerification = (rawHTML, defaultVerification) => {
@@ -8,7 +8,7 @@ const validatVerification = (rawHTML, defaultVerification) => {
   const request = $("div").text();
 
   if (request === "This request is not correct") {
-    return;
+    throw new NotFoundError("Receipt not found or invalid");
   }
 
   const normalize = (str) => str.replace(/\s+/g, " ").trim().toLowerCase();
