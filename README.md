@@ -74,6 +74,31 @@ Choose which fields to verify:
 
 Set any field to `false` to skip its verification.
 
+## Batch Receipt Verification
+The flexability that you get when using single receipt verification also comes with the batch verification.  
+
+**Request:**
+
+```json
+{
+  "receipt": ["CJP9OSP9U", "ABC1234567"],
+  "defaultVerification": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "result": ["CJP9OSP9U", "ABC1234567", "I12345QWER"],
+  "summary": {
+    "total": 3,
+    "valid": 2,
+    "invalid": 1
+  }
+}
+```
+
 ## Config
 
 Edit `config/verification.config.js` to change defaults.
@@ -114,4 +139,4 @@ Edit `config/verification.config.js` to change defaults.
 | `accountNumber` | Recipient account number                |
 | `date`          | Payment happened in expected year/month |
 
-#
+
