@@ -1,7 +1,12 @@
 import { telebirrParser, cbeParser } from "../utils/receiptParser.js";
-import receiptService from "../services/receiptService.js";
-import validationService from "../services/validationService.js";
+import { getReceiptData } from "../services/receiptService.js";
+import {
+  telebirrVerification,
+  cbeVerification,
+} from "../services/validationService.js";
 import { ValidationError } from "../utils/errorHandler.js";
+
+
 const getTelebirrReceipt = async (req, res) => {
   try {
     const { receipt, defaultVerification } = req.body;
@@ -10,30 +15,39 @@ const getTelebirrReceipt = async (req, res) => {
       throw new ValidationError("defaultVerification or receipt missing");
     }
 
-    let ID, getRawReceiptData;
+    const trimedReceipt = receipt.trim();
+    let ID, getRawReceiptData, validationResult;
 
-    if (receipt.toLowerCase().includes("telebirr")) {
-      ID = telebirrParser(receipt);
+    if (
+      trimedReceipt.toLowerCase().includes("telebirr") ||
+      /^[A-Z0-9]{10}$/.test(trimedReceipt)
+    ) {
+      ID = telebirrParser(trimedReceipt);
 
-      if (!ID) return res.status(400).json({ error: "Invalid TeleBirr Receipt ID" });
+      if (!ID)
+        return res.status(400).json({ error: "Invalid TeleBirr Receipt ID" });
 
-      getRawReceiptData = await receiptService(ID);
-    } else if (receipt.toLowerCase().includes("cbe")) {
-      ID = cbeParser(receipt);
+      getRawReceiptData = await getReceiptData(ID);
+
+      validationResult = telebirrVerification(
+        getRawReceiptData,
+        defaultVerification
+      );
+    } else if (
+      trimedReceipt.toLowerCase().includes("cbe") ||
+      /^[A-Z0-9]{12}\d{8}$/.test(trimedReceipt)
+    ) {
+      ID = cbeParser(trimedReceipt);
 
       if (!ID) return res.status(400).json({ error: "Invalid CBE Receipt ID" });
 
-      getRawReceiptData = await receiptService(ID);
-    }
+      getRawReceiptData = await getReceiptData(ID);
 
-    if (!ID) {
-      return res.status(400).json({ error: "Invalid Receipt ID" });
+      validationResult = cbeVerification(
+        getRawReceiptData,
+        defaultVerification
+      );
     }
-
-    const validationResult = validationService(
-      getRawReceiptData,
-      defaultVerification
-    );
 
     if (validationResult) {
       return res

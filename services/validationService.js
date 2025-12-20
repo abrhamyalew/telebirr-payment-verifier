@@ -1,8 +1,9 @@
 import config from "../config/verification.config.js";
 import { ValidationError, NotFoundError } from "../utils/errorHandler.js";
 import * as cheerio from "cheerio";
+import { PDFParse } from "pdf-parse";
 
-const validatVerification = (rawHTML, defaultVerification) => {
+export const telebirrVerification = (rawHTML, defaultVerification) => {
   const $ = cheerio.load(rawHTML);
 
   const request = $("div").text();
@@ -81,7 +82,6 @@ const validatVerification = (rawHTML, defaultVerification) => {
     date: date,
     accountNumber: accountNumber,
   };
-
 
   let verificationFlags;
 
@@ -168,4 +168,15 @@ const validatVerification = (rawHTML, defaultVerification) => {
   return true;
 };
 
-export default validatVerification;
+export const cbeVerification = async () => {
+  const link = new URL(config.cbe.api.cbeBaseUrl);
+
+  const parser = new PDFParse({ url: link });
+  const result = await parser.getTable();
+  await parser.destroy();
+
+  // Pretty-print each row of the first table
+  for (const row of result.pages[0].tables[0]) {
+    console.log(JSON.stringify(row));
+  }
+};

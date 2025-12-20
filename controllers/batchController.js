@@ -1,5 +1,8 @@
-import receiptService from "../services/receiptService.js";
-import validationService from "../services/validationService.js";
+import { getReceiptData } from "../services/receiptService.js";
+import {
+  telebirrVerification,
+  cbeVerification,
+} from "../services/validationService.js";
 import { ValidationError } from "../utils/errorHandler.js";
 
 const batchVerify = async (req, res) => {
@@ -20,7 +23,7 @@ const batchVerify = async (req, res) => {
     for (const element of receipt) {
       if (element) {
         try {
-          const getRawReceiptData = await receiptService(element);
+          const getRawReceiptData = await telebirrVerification(element);
 
           const validationResult = validationService(
             getRawReceiptData,

@@ -66,7 +66,6 @@ const config = {
   //API setting
   api: {
     telebirrBaseUrl: "https://transactioninfo.ethiotelecom.et/receipt/",
-    cbeBaseUrl: "https://apps.cbe.com.et:100/BranchReceipt/",
     timeout: 5000,
     retries: 3,
   },
