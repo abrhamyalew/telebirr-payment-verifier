@@ -1,3 +1,5 @@
+import { ValidationError } from "./errorHandler.js";
+
 export const telebirrParser = (input) => {
   if (!input || typeof input !== "string") return null;
 
@@ -60,6 +62,15 @@ export const cbeParser = (input) => {
       return null;
     }
   } catch (error) {
-    console.error(error)
+    const trimInput = input.trim();
+
+    const queryPattern = /^[A-Z0-9]{12}\d{8}$/;
+    const pathPattern = /^[A-Z0-9]{12}&\d{8}$/;
+
+    if (queryPattern.test(trimInput) || pathPattern.test(trimInput)) {
+      return trimInput;
+    }
+
+    return null;
   }
 };

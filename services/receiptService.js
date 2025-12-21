@@ -17,8 +17,17 @@ export const getReceiptData = async (receiptId) => {
       const rawHTML = await response.text();
 
       return rawHTML;
-    } else if (/^[A-Z0-9]{12}\d{8}$/.test(receiptId)) {
-      const FULL_API = config?.cbe?.api?.cbeBaseUrl + receiptId;
+    } else if (
+      /^[A-Z0-9]{12}\d{8}$/.test(receiptId) ||
+      /^[A-Z0-9]{12}&\d{8}$/.test(receiptId)
+    ) {
+      let FULL_API;
+
+      if (receiptId.includes("&")) {
+        FULL_API = config?.cbe?.api?.cbeBaseUrl1 + receiptId;
+      } else {
+        FULL_API = config?.cbe?.api?.cbeBaseUrl2 + receiptId;
+      }
 
       const response = await fetch(FULL_API);
 

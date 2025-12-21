@@ -31,7 +31,8 @@ const config = {
 
     //API setting
     api: {
-      cbeBaseUrl: "https://apps.cbe.com.et:100/BranchReceipt/",
+      cbeBaseUrl1: "https://apps.cbe.com.et:100/BranchReceipt/",
+      cbeBaseUrl2: "https://apps.cbe.com.et:100/?id=",
       timeout: 5000,
       retries: 3,
     },
