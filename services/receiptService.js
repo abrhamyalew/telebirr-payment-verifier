@@ -1,23 +1,44 @@
 import config from "../config/verification.config.js";
 import { ConnectionTimeOut, NotFoundError } from "../utils/errorHandler.js";
 
-const getTelebirrReceipt = async (receiptId) => {
+export const getReceiptData = async (receiptId) => {
   try {
-    const { api } = config;
+    if (/^[A-Z0-9]{10}$/.test(receiptId)) {
+      const FULL_API = config?.api?.telebirrBaseUrl + receiptId;
 
-    const FULL_API = api?.telebirrBaseUrl + receiptId;
+      const response = await fetch(FULL_API);
 
-    const response = await fetch(FULL_API);
+      if (!response.ok) {
+        throw new NotFoundError(
+          `Failed to fetch receipt. Status: ${response.status}`
+        );
+      }
 
-    if (!response.ok) {
-      throw new NotFoundError(
-        `Failed to fetch receipt. Status: ${response.status}`
-      );
+      const rawHTML = await response.text();
+
+      return rawHTML;
+    } else if (
+      /^[A-Z0-9]{12}\d{8}$/.test(receiptId) ||
+      /^[A-Z0-9]{12}&\d{8}$/.test(receiptId)
+    ) {
+      let FULL_API;
+
+      if (receiptId.includes("&")) {
+        FULL_API = config?.cbe?.api?.cbeBaseUrl1 + receiptId;
+      } else {
+        FULL_API = config?.cbe?.api?.cbeBaseUrl2 + receiptId;
+      }
+
+      const response = await fetch(FULL_API);
+
+      if (!response.ok) {
+        throw new NotFoundError(
+          `Failed to fetch receipt. Status: ${response.status}`
+        );
+      }
+
+      return response;
     }
-
-    const rawHTML = await response.text();
-
-    return rawHTML;
   } catch (error) {
     if (error.status) {
       throw error;
@@ -26,5 +47,3 @@ const getTelebirrReceipt = async (receiptId) => {
     throw new ConnectionTimeOut(error.message);
   }
 };
-
-export default getTelebirrReceipt;
