@@ -32,7 +32,6 @@ const batchVerify = async (req, res) => {
           trimedReceipt.toLowerCase().includes("ethiotelecom") ||
           /^[A-Z0-9]{10}$/.test(trimedReceipt)
         ) {
-          // Telebirr Logic
           ID = telebirrParser(trimedReceipt);
           if (!ID) throw new Error("Invalid TeleBirr Receipt ID");
 
@@ -46,12 +45,11 @@ const batchVerify = async (req, res) => {
           /^[A-Z0-9]{12}\d{8}$/.test(trimedReceipt) ||
           /^[A-Z0-9]{12}&\d{8}$/.test(trimedReceipt)
         ) {
-          // CBE Logic
           ID = cbeParser(trimedReceipt);
           if (!ID) throw new Error("Invalid CBE Receipt ID");
 
           getRawReceiptData = await getReceiptData(ID);
-          // CBE verification is async
+
           validationResult = await cbeVerification(
             getRawReceiptData,
             defaultVerification
