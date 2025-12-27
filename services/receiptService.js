@@ -38,6 +38,31 @@ export const getReceiptData = async (receiptId) => {
       }
 
       return response;
+    } else if (/^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(receiptId)) {
+      if (!config?.BOA?.api?.boaBaseUrl) {
+        throw new Error("BOA API base URL is not configured");
+      }
+
+      const FULL_API = config?.BOA?.api?.boaBaseUrl + receiptId;
+
+      const response = await fetch(FULL_API);
+
+      if (!response.ok) {
+        throw new NotFoundError(
+          `Failed to fetch receipt. Status: ${response.status}`
+        );
+      }
+
+      const parsedResponse = await response.json();
+
+      if (
+        !Array.isArray(parsedResponse.body) ||
+        parsedResponse.body.length === 0
+      ) {
+        throw new NotFoundError("Receipt data not found in response");
+      }
+
+      return parsedResponse.body[0];
     }
   } catch (error) {
     if (error.status) {
