@@ -3,15 +3,15 @@ dotenv.config();
 
 const config = {
   cbe: {
-    // what fields to verify
+    // Fields to verify
     defaultVerificationFields: {
       amount: true,
       recipientName: true,
-      date: true, //to checks whether the payment happend in the current month and year important to prevent fraud
+      date: true, // Validates payment month/year to prevent fraud
       accountNumber: true,
     },
 
-    // expected data
+    // Expected values from environment
     expectedData: {
       amount: process.env.CBE_EXPECTED_AMOUNT || null,
       recipientName: process.env.CBE_EXPECTED_RECIPIENT_NAME || null,
@@ -20,14 +20,14 @@ const config = {
       paymentMonth: process.env.CBE_EXPECTED_PAYMENT_MONTH || null,
     },
 
-    //Validation rules (a wiggle room to tolerate inconsistencies)
+    // Validation rules
     validation: {
-      amountTolerance: 0, // Must be exact ammount
+      amountTolerance: 0, // Must be exact amount
       nameCaseSensitive: false,
       allowPartialNameMatch: true,
     },
 
-    //API setting
+    // API configuration
     api: {
       cbeBaseUrl1: "https://apps.cbe.com.et:100/BranchReceipt/",
       cbeBaseUrl2: "https://apps.cbe.com.et:100/?id=",
@@ -37,16 +37,16 @@ const config = {
   },
 
   telebirr: {
-    // what fields to verify
+    // Fields to verify
     defaultVerificationFields: {
       amount: true,
       status: true,
       recipientName: true,
-      date: true, //to checks wheather the payment happend in the current month and year important to prevent fraud
+      date: true, // Validates payment month/year to prevent fraud
       accountNumber: true,
     },
 
-    // expected data
+    // Expected values from environment
     expectedData: {
       amount: process.env.TELEBIRR_EXPECTED_AMOUNT || null,
       status: process.env.TELEBIRR_EXPECTED_STATUS || null,
@@ -55,14 +55,14 @@ const config = {
       paymentYear: process.env.TELEBIRR_EXPECTED_PAYMENT_YEAR || null,
       paymentMonth: process.env.TELEBIRR_EXPECTED_PAYMENT_MONTH || null,
     },
-    //Validation rules (a wiggle room to tolerate inconsistencies)
+    // Validation rules
     validation: {
       amountTolerance: 0, // Must be exact amount
       nameCaseSensitive: false,
       allowPartialNameMatch: true,
     },
 
-    //API setting
+    // API configuration
     api: {
       telebirrBaseUrl: "https://transactioninfo.ethiotelecom.et/receipt/",
       timeout: 5000,
@@ -70,35 +70,34 @@ const config = {
     },
   },
 
-  BOA: {
-    // what fields to verify
+  boa: {
+    // Fields to verify
     defaultVerificationFields: {
       amount: true,
-      status: true,
       recipientName: true,
-      date: true, //to checks wheather the payment happend in the current month and year important to prevent fraud
+      date: true, // Validates payment month/year to prevent fraud
       accountNumber: true,
     },
 
-    // expected data
+    // Expected values from environment
     expectedData: {
       amount: process.env.BOA_EXPECTED_AMOUNT || null,
-      status: process.env.BOA_EXPECTED_STATUS || null,
       recipientName: process.env.BOA_EXPECTED_RECIPIENT_NAME || null,
       accountNumber: process.env.BOA_EXPECTED_RECIPIENT_ACCOUNT || null,
       paymentYear: process.env.BOA_EXPECTED_PAYMENT_YEAR || null,
       paymentMonth: process.env.BOA_EXPECTED_PAYMENT_MONTH || null,
     },
-    //Validation rules (a wiggle room to tolerate inconsistencies)
+    // Validation rules
     validation: {
       amountTolerance: 0, // Must be exact amount
       nameCaseSensitive: false,
       allowPartialNameMatch: true,
     },
 
-    //API setting
+    // API configuration
     api: {
-      boaBaseUrl: "https://cs.bankofabyssinia.com/api/onlineSlip/getDetails/?id=",
+      boaBaseUrl:
+        "https://cs.bankofabyssinia.com/api/onlineSlip/getDetails/?id=",
       timeout: 5000,
       retries: 3,
     },

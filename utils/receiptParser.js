@@ -75,6 +75,8 @@ export const cbeParser = (input) => {
   }
 };
 
+
+
 export const boaParser = (input) => {
   try {
     if (!input || typeof input !== "string") return null;
@@ -93,7 +95,7 @@ export const boaParser = (input) => {
 
     return null;
   } catch (error) {
-    // Handle plain receipt ID input (non-URL)
+    // Handle plain receipt
     const trimInput = input.trim();
     const pattern = /^FT\d{5}[A-Z0-9]{5}\d{5}$/;
 

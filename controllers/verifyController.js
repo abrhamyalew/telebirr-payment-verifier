@@ -57,9 +57,6 @@ const getTelebirrReceipt = async (req, res) => {
       /^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(trimedReceipt)
     ) {
       ID = boaParser(trimedReceipt);
-
-      console.log(ID);
-
       if (!ID) return res.status(400).json({ error: "Invalid BOA Receipt ID" });
 
       getRawReceiptData = await getReceiptData(ID);
@@ -76,6 +73,8 @@ const getTelebirrReceipt = async (req, res) => {
       return res
         .status(200)
         .json({ message: `The receipt '${ID}' is a valid receipt.` });
+    } else {
+      return res.status(400).json({ error: "Receipt validation failed" });
     }
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.message });
