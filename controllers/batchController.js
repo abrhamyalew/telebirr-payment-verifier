@@ -2,8 +2,9 @@ import { getReceiptData } from "../services/receiptService.js";
 import {
   telebirrVerification,
   cbeVerification,
+  boaVerification,
 } from "../services/validationService.js";
-import { telebirrParser, cbeParser } from "../utils/receiptParser.js";
+import { telebirrParser, cbeParser, boaParser } from "../utils/receiptParser.js";
 import { ValidationError } from "../utils/errorHandler.js";
 
 const batchVerify = async (req, res) => {
@@ -51,6 +52,19 @@ const batchVerify = async (req, res) => {
           getRawReceiptData = await getReceiptData(ID);
 
           validationResult = await cbeVerification(
+            getRawReceiptData,
+            defaultVerification
+          );
+        } else if (
+          trimedReceipt.toLowerCase().includes("bankofabyssinia") ||
+          /^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(trimedReceipt)
+        ) {
+          ID = boaParser(trimedReceipt);
+          if (!ID) throw new Error("Invalid BOA Receipt ID");
+
+          getRawReceiptData = await getReceiptData(ID);
+
+          validationResult = await boaVerification(
             getRawReceiptData,
             defaultVerification
           );
