@@ -73,8 +73,6 @@ const getTelebirrReceipt = async (req, res) => {
       return res
         .status(200)
         .json({ message: `The receipt '${ID}' is a valid receipt.` });
-    } else {
-      return res.status(400).json({ error: "Receipt validation failed" });
     }
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.message });
