@@ -1,4 +1,3 @@
-import config from "../config/verification.config.js";
 import { ConnectionTimeOut, NotFoundError } from "../utils/errorHandler.js";
 import { Pool } from "undici";
 
@@ -8,6 +7,8 @@ const telebirrPool = new Pool("https://transactioninfo.ethiotelecom.et", {
   pipelining: 10, // HTTP/1.1 pipelining for faster requests
   keepAliveTimeout: 60000, // Keep connections alive for 60s
   keepAliveMaxTimeout: 600000, // Max keep-alive time
+  headersTimeout: 15000, // 10s timeout for receiving headers
+  bodyTimeout: 15000, // 10s timeout for receiving body
 });
 
 const cbePool = new Pool("https://apps.cbe.com.et:100", {
@@ -15,6 +16,8 @@ const cbePool = new Pool("https://apps.cbe.com.et:100", {
   pipelining: 10,
   keepAliveTimeout: 60000,
   keepAliveMaxTimeout: 600000,
+  headersTimeout: 15000,
+  bodyTimeout: 15000,
 });
 
 const boaPool = new Pool("https://cs.bankofabyssinia.com", {
@@ -22,6 +25,8 @@ const boaPool = new Pool("https://cs.bankofabyssinia.com", {
   pipelining: 10,
   keepAliveTimeout: 60000,
   keepAliveMaxTimeout: 600000,
+  headersTimeout: 15000,
+  bodyTimeout: 15000,
 });
 
 export const getReceiptData = async (receiptId) => {
@@ -73,9 +78,10 @@ export const getReceiptData = async (receiptId) => {
         );
       }
 
-      // Return object with arrayBuffer method to match existing interface
+      // Eagerly consume body to release connection back to pool
+      const buffer = await body.arrayBuffer();
       return {
-        arrayBuffer: () => body.arrayBuffer(),
+        arrayBuffer: async () => buffer,
       };
     } else if (/^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(receiptId)) {
       // BOA

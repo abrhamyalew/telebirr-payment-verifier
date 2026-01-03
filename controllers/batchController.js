@@ -27,7 +27,7 @@ const verifySingleReceipt = async (receipt, defaultVerification) => {
     if (!ID) throw new Error("Invalid TeleBirr Receipt ID");
 
     getRawReceiptData = await getReceiptData(ID);
-    validationResult = telebirrVerification(
+    validationResult =  telebirrVerification(
       getRawReceiptData,
       defaultVerification
     );
