@@ -4,8 +4,69 @@ import {
   cbeVerification,
   boaVerification,
 } from "../services/validationService.js";
-import { telebirrParser, cbeParser, boaParser } from "../utils/receiptParser.js";
+import { processBatch } from "../services/batchProcessor.js";
+import {
+  telebirrParser,
+  cbeParser,
+  boaParser,
+} from "../utils/receiptParser.js";
 import { ValidationError } from "../utils/errorHandler.js";
+
+const verifySingleReceipt = async (receipt, defaultVerification) => {
+  if (!receipt) return null;
+
+  const trimedReceipt = receipt.trim();
+  let ID, getRawReceiptData, validationResult;
+
+  if (
+    trimedReceipt.toLowerCase().includes("ethiotelecom") ||
+    /^[A-Z0-9]{10}$/.test(trimedReceipt)
+  ) {
+    // Telebirr
+    ID = telebirrParser(trimedReceipt);
+    if (!ID) throw new Error("Invalid TeleBirr Receipt ID");
+
+    getRawReceiptData = await getReceiptData(ID);
+    validationResult = telebirrVerification(
+      getRawReceiptData,
+      defaultVerification
+    );
+  } else if (
+    trimedReceipt.toLowerCase().includes("cbe") ||
+    /^[A-Z0-9]{12}\d{8}$/.test(trimedReceipt) ||
+    /^[A-Z0-9]{12}&\d{8}$/.test(trimedReceipt)
+  ) {
+    // CBE
+    ID = cbeParser(trimedReceipt);
+    if (!ID) throw new Error("Invalid CBE Receipt ID");
+
+    getRawReceiptData = await getReceiptData(ID);
+    validationResult = await cbeVerification(
+      getRawReceiptData,
+      defaultVerification
+    );
+  } else if (
+    trimedReceipt.toLowerCase().includes("bankofabyssinia") ||
+    /^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(trimedReceipt)
+  ) {
+    // BOA
+    ID = boaParser(trimedReceipt);
+    if (!ID) throw new Error("Invalid BOA Receipt ID");
+
+    getRawReceiptData = await getReceiptData(ID);
+    validationResult = await boaVerification(
+      getRawReceiptData,
+      defaultVerification
+    );
+  } else {
+    throw new ValidationError(`Receipt '${receipt}' is not recognized`);
+  }
+
+  if (validationResult) {
+    return receipt;
+  }
+  return null;
+};
 
 const batchVerify = async (req, res) => {
   try {
@@ -22,64 +83,41 @@ const batchVerify = async (req, res) => {
     let validReceipts = [];
     let failedReceipts = [];
 
-    for (const element of receipt) {
-      if (!element) continue;
+    // Check if parallel processing is enabled
+    const { enableParallelProcessing } = (
+      await import("../config/performance.config.js")
+    ).default.batch;
 
-      const trimedReceipt = element.trim();
-      let ID, getRawReceiptData, validationResult;
+    if (enableParallelProcessing) {
+      // Use parallel batch processor
+      const results = await processBatch(receipt, (item) =>
+        verifySingleReceipt(item, defaultVerification)
+      );
 
-      try {
-        if (
-          trimedReceipt.toLowerCase().includes("ethiotelecom") ||
-          /^[A-Z0-9]{10}$/.test(trimedReceipt)
-        ) {
-          ID = telebirrParser(trimedReceipt);
-          if (!ID) throw new Error("Invalid TeleBirr Receipt ID");
+      validReceipts = results.valid;
+      failedReceipts = results.failed.map((f) => ({
+        receiptId: f.item,
+        error: f.error,
+      }));
+    } else {
+      // Use sequential processing (original implementation)
+      for (const element of receipt) {
+        if (!element) continue;
 
-          getRawReceiptData = await getReceiptData(ID);
-          validationResult = telebirrVerification(
-            getRawReceiptData,
+        try {
+          const result = await verifySingleReceipt(
+            element,
             defaultVerification
           );
-        } else if (
-          trimedReceipt.toLowerCase().includes("cbe") ||
-          /^[A-Z0-9]{12}\d{8}$/.test(trimedReceipt) ||
-          /^[A-Z0-9]{12}&\d{8}$/.test(trimedReceipt)
-        ) {
-          ID = cbeParser(trimedReceipt);
-          if (!ID) throw new Error("Invalid CBE Receipt ID");
-
-          getRawReceiptData = await getReceiptData(ID);
-
-          validationResult = await cbeVerification(
-            getRawReceiptData,
-            defaultVerification
-          );
-        } else if (
-          trimedReceipt.toLowerCase().includes("bankofabyssinia") ||
-          /^FT\d{5}[A-Z0-9]{5}\d{5}$/.test(trimedReceipt)
-        ) {
-          ID = boaParser(trimedReceipt);
-          if (!ID) throw new Error("Invalid BOA Receipt ID");
-
-          getRawReceiptData = await getReceiptData(ID);
-
-          validationResult = await boaVerification(
-            getRawReceiptData,
-            defaultVerification
-          );
-        } else {
-          throw new ValidationError(`Receipt '${element}' is not recognized`);
+          if (result) {
+            validReceipts.push(result);
+          }
+        } catch (error) {
+          failedReceipts.push({
+            receiptId: element,
+            error: error.message,
+          });
         }
-
-        if (validationResult) {
-          validReceipts.push(element);
-        }
-      } catch (error) {
-        failedReceipts.push({
-          receiptId: element,
-          error: error.message,
-        });
       }
     }
 
