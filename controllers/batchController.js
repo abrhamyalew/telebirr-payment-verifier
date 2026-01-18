@@ -1,9 +1,7 @@
 import { getReceiptData } from "../services/receiptService.js";
-import {
-  telebirrVerification,
-  cbeVerification,
-  boaVerification,
-} from "../services/validationService.js";
+import { telebirrVerification } from "../validators/telebirrValidator.js";
+import { cbeVerification } from "../validators/cbeValidator.js";
+import { boaVerification } from "../validators/boaValidator.js";
 import { processBatch } from "../services/batchProcessor.js";
 import {
   telebirrParser,
@@ -27,9 +25,9 @@ const verifySingleReceipt = async (receipt, defaultVerification) => {
     if (!ID) throw new Error("Invalid TeleBirr Receipt ID");
 
     getRawReceiptData = await getReceiptData(ID);
-    validationResult =  telebirrVerification(
+    validationResult = telebirrVerification(
       getRawReceiptData,
-      defaultVerification
+      defaultVerification,
     );
   } else if (
     trimedReceipt.toLowerCase().includes("cbe") ||
@@ -43,7 +41,7 @@ const verifySingleReceipt = async (receipt, defaultVerification) => {
     getRawReceiptData = await getReceiptData(ID);
     validationResult = await cbeVerification(
       getRawReceiptData,
-      defaultVerification
+      defaultVerification,
     );
   } else if (
     trimedReceipt.toLowerCase().includes("bankofabyssinia") ||
@@ -56,7 +54,7 @@ const verifySingleReceipt = async (receipt, defaultVerification) => {
     getRawReceiptData = await getReceiptData(ID);
     validationResult = await boaVerification(
       getRawReceiptData,
-      defaultVerification
+      defaultVerification,
     );
   } else {
     throw new ValidationError(`Receipt '${receipt}' is not recognized`);
@@ -82,7 +80,7 @@ const batchVerify = async (req, res) => {
 
     // Use parallel batch processor
     const results = await processBatch(receipt, (item) =>
-      verifySingleReceipt(item, defaultVerification)
+      verifySingleReceipt(item, defaultVerification),
     );
 
     return res.status(200).json({

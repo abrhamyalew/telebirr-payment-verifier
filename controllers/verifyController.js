@@ -4,11 +4,9 @@ import {
   boaParser,
 } from "../utils/receiptParser.js";
 import { getReceiptData } from "../services/receiptService.js";
-import {
-  telebirrVerification,
-  cbeVerification,
-  boaVerification,
-} from "../services/validationService.js";
+import { telebirrVerification } from "../validators/telebirrValidator.js";
+import { cbeVerification } from "../validators/cbeValidator.js";
+import { boaVerification } from "../validators/boaValidator.js";
 import { ValidationError } from "../utils/errorHandler.js";
 
 const getTelebirrReceipt = async (req, res) => {
@@ -35,7 +33,7 @@ const getTelebirrReceipt = async (req, res) => {
 
       validationResult = telebirrVerification(
         getRawReceiptData,
-        defaultVerification
+        defaultVerification,
       );
     } else if (
       trimedReceipt.toLowerCase().includes("cbe") ||
@@ -50,7 +48,7 @@ const getTelebirrReceipt = async (req, res) => {
 
       validationResult = await cbeVerification(
         getRawReceiptData,
-        defaultVerification
+        defaultVerification,
       );
     } else if (
       trimedReceipt.toLowerCase().includes("bankofabyssinia") ||
@@ -63,7 +61,7 @@ const getTelebirrReceipt = async (req, res) => {
 
       validationResult = await boaVerification(
         getRawReceiptData,
-        defaultVerification
+        defaultVerification,
       );
     } else {
       throw new ValidationError(`receipt '${receipt}' is NOT a valid receipt`);
