@@ -1,17 +1,19 @@
-import config from "../config/verification.config"
-import { ValidationError } from "../utils/errorHandler"
+import config from "../config/verification.config.js";
+import { ValidationError } from "../utils/errorHandler.js";
 
-export const amharaBank = (parsedData, defaultVerification) => {
+export const amharaBankVerification = (parsedData, defaultVerification) => {
+  if (parsedData["status"] !== true) {
+    throw new ValidationError("Transaction status is not successful");
+  }
+
   const date = parsedData["bookingDate"];
-
-  if(parsedData["status"] === true )
 
   if (!date) {
     throw new ValidationError("No parsed data for Transaction Date");
   }
 
   const year = date.slice(0, 4);
-  const month = datePart.slice(4, 6);
+  const month = date.slice(4, 6);
 
   const receiptData = {
     amount: parsedData["amount"],
