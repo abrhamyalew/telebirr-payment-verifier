@@ -29,6 +29,15 @@ const boaPool = new Pool("https://cs.bankofabyssinia.com", {
   bodyTimeout: 15000,
 });
 
+const amharaBankPool = new Pool("https://transaction.amharabank.com.et", {
+  connections: 50,
+  pipelining: 10,
+  keepAliveTimeout: 60000,
+  keepAliveMaxTimeout: 600000,
+  headersTimeout: 15000,
+  bodyTimeout: 15000,
+});
+
 export const getReceiptData = async (receiptId) => {
   try {
     if (/^[A-Z0-9]{10}$/.test(receiptId)) {
@@ -45,7 +54,7 @@ export const getReceiptData = async (receiptId) => {
 
       if (statusCode !== 200) {
         throw new NotFoundError(
-          `Failed to fetch receipt. Status: ${statusCode}`
+          `Failed to fetch receipt. Status: ${statusCode}`,
         );
       }
 
@@ -74,7 +83,7 @@ export const getReceiptData = async (receiptId) => {
 
       if (statusCode !== 200) {
         throw new NotFoundError(
-          `Failed to fetch receipt. Status: ${statusCode}`
+          `Failed to fetch receipt. Status: ${statusCode}`,
         );
       }
 
@@ -98,7 +107,7 @@ export const getReceiptData = async (receiptId) => {
 
       if (statusCode !== 200) {
         throw new NotFoundError(
-          `Failed to fetch receipt. Status: ${statusCode}`
+          `Failed to fetch receipt. Status: ${statusCode}`,
         );
       }
 
@@ -112,6 +121,32 @@ export const getReceiptData = async (receiptId) => {
       }
 
       return parsedResponse.body[0];
+    } else if (/^[A-Z0-9]{12}$/.test(receiptId)) {
+      // Amhara Bank
+      const path = `/api/transaction/${receiptId}`;
+
+      const { statusCode, body } = await amharaBankPool.request({
+        path,
+        method: "GET",
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        },
+      });
+
+      if (statusCode !== 200) {
+        throw new NotFoundError(
+          `Failed to fetch receipt. Status: ${statusCode}`,
+        );
+      }
+
+      const parsedResponse = await body.json();
+
+      if (!parsedResponse || parsedResponse.status !== true) {
+        throw new NotFoundError("Receipt data not found or invalid");
+      }
+
+      return parsedResponse;
     }
   } catch (error) {
     if (error.status) {
